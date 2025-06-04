@@ -4,36 +4,28 @@ import os
 
 app = create_app()
 
-def wsgi_app(environ, start_response):
-    with app.request_context(environ):
-        try:
-            response = app.full_dispatch_request()
-        except Exception as e:
-            response = app.make_response(str(e))
-            response.status_code = 500
-        
-        start_response(f"{response.status_code} {response.status}",list(response.headers.items()))
-        
-        return [response.get_data()]
-
 def handler(event, context):
-    """Handler principal para o Vercel"""
-    from werkzeug.wrappers import Request
+    """Handler para o ambiente serverless do Vercel"""
+    from io import BytesIO
     from werkzeug.datastructures import Headers
     
-    # Converte o evento do Vercel para ambiente WSGI
     headers = Headers()
     for key, value in (event.get('headers') or {}).items():
         headers.add(key, value)
     
+    body = event.get('body', '') or ''
+    if isinstance(body, dict):
+        import json
+        body = json.dumps(body)
+    
     environ = {
         'REQUEST_METHOD': event.get('httpMethod', 'GET'),
         'PATH_INFO': event.get('path', '/'),
-        'QUERY_STRING': event.get('queryStringParameters', {}),
+        'QUERY_STRING': '&'.join([f"{k}={v}" for k, v in (event.get('queryStringParameters') or {}).items()]),
         'SERVER_NAME': 'localhost',
         'SERVER_PORT': '80',
         'wsgi.url_scheme': headers.get('X-Forwarded-Proto', 'https'),
-        'wsgi.input': event.get('body', ''),
+        'wsgi.input': BytesIO(body.encode('utf-8')),
         'wsgi.errors': None,
         'wsgi.version': (1, 0),
         'wsgi.multithread': False,
@@ -42,20 +34,26 @@ def handler(event, context):
         **{'HTTP_' + k.upper().replace('-', '_'): v for k, v in headers.items()}
     }
     
-    # Processa a requisição
-    response_data = []
+    response_headers = []
+    response_body = []
     
-    def start_response(status, response_headers):
-        nonlocal response_data
-        response_data[:] = [status, response_headers]
+    def start_response(status, headers, exc_info=None):
+        nonlocal response_headers
+        response_headers[:] = [status, headers]
+        return response_body.append
     
-    body = b''.join(wsgi_app(environ, start_response))
+    app_iter = app(environ, start_response)
+    try:
+        response_body.extend(iter(app_iter))
+    finally:
+        if hasattr(app_iter, 'close'):
+            app_iter.close()
     
-    status_code = int(response_data[0].split()[0])
-    headers = dict(response_data[1])
+    status_code = int(response_headers[0].split()[0])
+    headers_dict = dict(response_headers[1])
     
     return {
         'statusCode': status_code,
-        'headers': headers,
-        'body': body.decode('utf-8')
+        'headers': headers_dict,
+        'body': b''.join(response_body).decode('utf-8')
     }

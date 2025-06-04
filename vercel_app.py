@@ -12,9 +12,7 @@ def wsgi_app(environ, start_response):
             response = app.make_response(str(e))
             response.status_code = 500
         
-        start_response(
-            f"{response.status_code} {response.status}",
-            list(response.headers.items())
+        start_response(f"{response.status_code} {response.status}",list(response.headers.items()))
         
         return [response.get_data()]
 

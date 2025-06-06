@@ -34,9 +34,7 @@ def create_app(config_class=Config):
     if last_exception is not None:
         raise RuntimeError(f"Failed to connect to MongoDB after {max_retries} attempts. Last error: {str(last_exception)}")
     
-    from app.routes import artesao_routes, produto_routes, auth_routes
-    app.register_blueprint(artesao_routes.bp)
-    app.register_blueprint(produto_routes.bp)
+    from app.routes import auth_routes
     app.register_blueprint(auth_routes.bp)
     
     @app.route('/health')

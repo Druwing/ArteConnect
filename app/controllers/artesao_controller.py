@@ -11,7 +11,9 @@ def cadastrar_artesao():
     artesao_id = Artesao.criar_artesao(
         nome=data['nome'],
         bio=data['bio'],
-        imagem_perfil=imagem_binaria
+        imagem_perfil=imagem_binaria,
+        email=data['email'],
+        senha=data['senha']
     )
     
     return jsonify({

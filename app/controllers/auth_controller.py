@@ -1,27 +1,94 @@
 from flask import jsonify, request
-from bson import ObjectId
-from app.models.database import get_db
+import jwt
+import datetime
+from functools import wraps
+from config import Config
+from app.models.artesao import Artesao
+from app.models.cliente import Cliente
+
+def gerar_token(usuario):
+    payload = {
+        'id': str(usuario['_id']),
+        'email': usuario['email'],
+        'tipo': usuario['tipo'],
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
+    }
+    return jwt.encode(payload, Config.JWT_SECRET_KEY, algorithm='HS256')
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'message': 'Token de acesso ausente'}), 401
+        
+        try:
+            token = token.split(' ')[1] 
+            data = jwt.decode(token, Config.JWT_SECRET_KEY, algorithms=['HS256'])
+            request.usuario = data
+        except:
+            return jsonify({'message': 'Token inválido'}), 401
+        
+        return f(*args, **kwargs)
+    return decorated
+
+def artesao_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if request.usuario.get('tipo') != 'artesao':
+            return jsonify({'message': 'Acesso restrito a artesãos'}), 403
+        return f(*args, **kwargs)
+    return decorated
+
+def cadastrar_artesao():
+    data = request.json
+    if not data or 'email' not in data or 'senha' not in data:
+        return jsonify({'message': 'Dados incompletos'}), 400
+    
+    artesao_id = Artesao.criar_artesao(
+        nome=data.get('nome'),
+        email=data['email'],
+        senha=data['senha'],
+        bio=data.get('bio', ''),
+        imagem_perfil=data.get('imagem_perfil', '')
+    )
+    
+    if not artesao_id:
+        return jsonify({'message': 'Email já cadastrado'}), 409
+    
+    return jsonify({'message': 'Artesão cadastrado com sucesso'}), 201
 
 def cadastrar_cliente():
     data = request.json
-    db = get_db()
+    if not data or 'email' not in data or 'senha' not in data:
+        return jsonify({'message': 'Dados incompletos'}), 400
     
-    cliente_id = db.clientes.insert_one({
-        'email': data['email'],
-        'nome': data['nome']
-    }).inserted_id
+    cliente_id = Cliente.criar_cliente(
+        nome=data.get('nome'),
+        email=data['email'],
+        senha=data['senha']
+    )
     
-    return jsonify({
-        'mensagem': 'Cliente cadastrado com sucesso',
-        'cliente_id': str(cliente_id)
-    }), 201
+    if not cliente_id:
+        return jsonify({'message': 'Email já cadastrado'}), 409
+    
+    return jsonify({'message': 'Cliente cadastrado com sucesso'}), 201
 
-def obter_cliente(cliente_id):
-    db = get_db()
-    cliente = db.clientes.find_one({'_id': ObjectId(cliente_id)})
+def login():
+    data = request.json
+    if not data or 'email' not in data or 'senha' not in data:
+        return jsonify({'message': 'Credenciais ausentes'}), 400
     
-    if not cliente:
-        return jsonify({'mensagem': 'Cliente não encontrado'}), 404
+    usuario = Artesao.verificar_credenciais(data['email'], data['senha'])
+    if not usuario:
+        usuario = Cliente.verificar_credenciais(data['email'], data['senha'])
     
-    cliente['_id'] = str(cliente['_id'])
-    return jsonify(cliente), 200
+    if not usuario:
+        return jsonify({'message': 'Email ou senha incorretos'}), 401
+    
+    token = gerar_token(usuario)
+    return jsonify({
+        'token': token,
+        'tipo': usuario['tipo'],
+        'id': str(usuario['_id'])
+    }), 200

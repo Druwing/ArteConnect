@@ -3,34 +3,32 @@ import bcrypt
 from datetime import datetime
 from app.models.database import get_db
 
-class Artesao:
+class Cliente:
     @staticmethod
-    def criar_artesao(nome, email, senha, bio, imagem_perfil):
+    def criar_cliente(nome, email, senha):
         db = get_db()
         
-        if db.artesaos.find_one({"email": email}):
+        if db.clientes.find_one({"email": email}):
             return None
         
         hashed = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
         
-        artesao_data = {
+        cliente_data = {
             'nome': nome,
             'email': email,
             'senha': hashed,
-            'bio': bio,
-            'imagem_perfil': imagem_perfil,
-            'tipo': 'artesao',
+            'tipo': 'cliente',
             'data_criacao': datetime.utcnow()
         }
         
-        result = db.artesaos.insert_one(artesao_data)
+        result = db.clientes.insert_one(cliente_data)
         return str(result.inserted_id)
 
     @staticmethod
     def verificar_credenciais(email, senha):
         db = get_db()
-        artesao = db.artesaos.find_one({"email": email})
+        cliente = db.clientes.find_one({"email": email})
         
-        if artesao and bcrypt.checkpw(senha.encode('utf-8'), artesao['senha']):
-            return artesao
+        if cliente and bcrypt.checkpw(senha.encode('utf-8'), cliente['senha']):
+            return cliente
         return None

@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from app.models.carrinho import Carrinho
 from app.models.produto import Produto
 from app.controllers.auth_controller import login_required
@@ -67,25 +67,16 @@ def checkout():
         if estoque < item['quantidade']:
             return jsonify({'message': f"Estoque insuficiente para o produto {produto.get('nome', str(item['produto_id']))}"}), 400
         produtos_para_atualizar.append({
-            'produto_id': str(produto['_id']),
-            'nova_quantidade': estoque - item['quantidade'],
-            'artesao_id': str(produto['artesao_id'])
+            'produto_id': produto['_id'],
+            'nova_quantidade': estoque - item['quantidade']
         })
 
-    # 2. Atualiza o estoque de todos os produtos usando atualizar_quantidade_produto
+    # 2. Atualiza o estoque de todos os produtos diretamente
     for produto_info in produtos_para_atualizar:
-        # Monta um request-like objeto para atualizar_quantidade_produto
-        with request.app.test_request_context(
-            json={
-                'produto_id': produto_info['produto_id'],
-                'quantidade': produto_info['nova_quantidade']
-            }
-        ):
-            # Força o usuário autenticado como o artesão do produto
-            request.usuario = {'id': produto_info['artesao_id']}
-            resp = atualizar_quantidade_produto()
-            if resp[1] != 200:
-                return resp
+        db.produtos.update_one(
+            {'_id': produto_info['produto_id']},
+            {'$set': {'quantidade': produto_info['nova_quantidade']}}
+        )
 
     # 3. Limpa o carrinho
     Carrinho.limpar_carrinho(cliente_id)

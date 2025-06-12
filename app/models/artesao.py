@@ -34,3 +34,13 @@ class Artesao:
         if artesao and bcrypt.checkpw(senha.encode('utf-8'), artesao['senha']):
             return artesao
         return None
+
+    @staticmethod
+    def listar_artesaos():
+        db = get_db()
+        return list(db.artesaos.find({}))
+
+    @staticmethod
+    def obter_artesao(artesao_id):
+        db = get_db()
+        return db.artesaos.find_one({'_id': ObjectId(artesao_id)})

@@ -2,6 +2,8 @@ from flask import jsonify, request
 from bson import ObjectId
 from app.models.database import get_db
 from app.controllers.auth_controller import login_required, artesao_required
+from datetime import datetime
+
 
 @login_required
 @artesao_required

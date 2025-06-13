@@ -41,7 +41,7 @@ class Produto:
             'cliente_id': ObjectId(cliente_id),
             'nota': nota,
             'texto': texto,
-            'data': datetime.datetime.utcnow()
+            'data': datetime.utcnow()
         }
         return db.produtos.update_one(
             {'_id': ObjectId(produto_id)},

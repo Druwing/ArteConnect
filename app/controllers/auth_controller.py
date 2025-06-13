@@ -11,9 +11,9 @@ def gerar_token(usuario):
         'id': str(usuario['_id']),
         'email': usuario['email'],
         'tipo': usuario['tipo'],
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
+        'exp': datetime.utcnow() + datetime.timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
     }
-    return jwt.encode(payload, Config.JWT_SECRET_KEY, algorithm='HS256')
+    return jwt.encode(payload, Config.SECRET_KEY, algorithm='HS256')
 
 def login_required(f):
     @wraps(f)
@@ -24,7 +24,7 @@ def login_required(f):
         
         try:
             token = token.split(' ')[1] 
-            data = jwt.decode(token, Config.JWT_SECRET_KEY, algorithms=['HS256'])
+            data = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
             request.usuario = data
         except:
             return jsonify({'message': 'Token inválido'}), 401

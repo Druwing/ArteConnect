@@ -3,6 +3,8 @@ from bson import ObjectId
 import datetime
 from app.models.database import get_db
 from app.controllers.auth_controller import login_required, artesao_required
+from datetime import datetime
+
 
 @login_required
 @artesao_required
@@ -21,7 +23,7 @@ def criar_produto():
         'quantidade': int(data['quantidade']),
         'artesao_id': ObjectId(artesao_id),
         'imagem_url': data.get('imagem_url', ''),
-        'data_criacao': datetime.datetime.utcnow()
+        'data_criacao': datetime.utcnow()
     }
     
     result = db.produtos.insert_one(produto_data)

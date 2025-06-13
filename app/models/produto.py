@@ -1,6 +1,6 @@
 from bson import ObjectId
 from app.models.database import get_db
-import datetime
+from datetime import datetime
 
 class Produto:
     @staticmethod
@@ -41,7 +41,7 @@ class Produto:
             'cliente_id': ObjectId(cliente_id),
             'nota': nota,
             'texto': texto,
-            'data': datetime.utcnow()
+            'data': datetime.now()
         }
         return db.produtos.update_one(
             {'_id': ObjectId(produto_id)},

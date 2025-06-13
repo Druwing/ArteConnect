@@ -20,7 +20,7 @@ class Artesao:
             'bio': bio,
             'imagem_perfil': imagem_perfil,
             'tipo': 'artesao',
-            'data_criacao': datetime.utcnow()
+            'data_criacao': datetime.now()
         }
         
         result = db.artesaos.insert_one(artesao_data)

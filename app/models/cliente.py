@@ -18,7 +18,7 @@ class Cliente:
             'email': email,
             'senha': hashed,
             'tipo': 'cliente',
-            'data_criacao': datetime.utcnow()
+            'data_criacao': datetime.now()
         }
         
         result = db.clientes.insert_one(cliente_data)

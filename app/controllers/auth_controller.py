@@ -1,6 +1,6 @@
 from flask import jsonify, request
 import jwt
-import datetime
+from datetime import datetime,timedelta
 from functools import wraps
 from config import Config
 from app.models.artesao import Artesao
@@ -11,7 +11,7 @@ def gerar_token(usuario):
         'id': str(usuario['_id']),
         'email': usuario['email'],
         'tipo': usuario['tipo'],
-        'exp': datetime.utcnow() + datetime.timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
+        'exp': datetime.now() + timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
     }
     return jwt.encode(payload, Config.SECRET_KEY, algorithm='HS256')
 

@@ -11,7 +11,7 @@ class Carrinho:
             carrinho_id = db.carrinhos.insert_one({
                 'cliente_id': ObjectId(cliente_id),
                 'produtos': [],
-                'data_criacao': datetime.utcnow()
+                'data_criacao': datetime.now()
             }).inserted_id
             carrinho = db.carrinhos.find_one({'_id': carrinho_id})
         return carrinho
@@ -34,7 +34,7 @@ class Carrinho:
             db.carrinhos.insert_one({
                 'cliente_id': ObjectId(cliente_id),
                 'produtos': [],
-                'data_criacao': datetime.utcnow()
+                'data_criacao': datetime.now()
             })
             carrinho = db.carrinhos.find_one({'cliente_id': ObjectId(cliente_id)})
 

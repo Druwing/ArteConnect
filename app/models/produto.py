@@ -1,7 +1,6 @@
 from bson import ObjectId
 from app.models.database import get_db
-from datetime import datetime
-
+import datetime
 
 class Produto:
     @staticmethod

@@ -1,0 +1,60 @@
+import pytest
+
+# ----------- SUCCESS CASES -----------
+def test_criar_produto_success(flask_client, artesao_token):
+    response = flask_client.post('/produtos/', json={
+        'nome': 'Produto Teste',
+        'descricao': 'Descrição do produto',
+        'preco': 100.50,
+        'quantidade': 5,
+        'imagem_url': 'http://exemplo.com/imagem.png'
+    }, headers={"Authorization": f"Bearer {artesao_token}"})
+    assert response.status_code == 201
+    data = response.json
+    assert 'produto_id' in data
+    global produto_id
+    produto_id = data['produto_id']
+
+def test_listar_produtos(flask_client, artesao_token):
+    response = flask_client.get('/produtos/', headers={"Authorization": f"Bearer {artesao_token}"})
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+
+def test_atualizar_quantidade_produto_success(flask_client, artesao_token):
+    global produto_id
+    response = flask_client.post('/produtos/atualizar_quantidade', json={
+        'produto_id': produto_id,
+        'quantidade': 3
+    }, headers={"Authorization": f"Bearer {artesao_token}"})
+    assert response.status_code == 200
+    assert 'Quantidade do produto atualizada com sucesso' in response.json['message']
+
+# ----------- FAIL CASES -----------
+
+def test_criar_produto_fail_no_auth(flask_client):
+    response = flask_client.post('/produtos/', json={
+        'nome': 'Produto Teste',
+        'descricao': 'Descrição do produto',
+        'preco': 100.50,
+        'quantidade': 5
+    })
+    assert response.status_code == 401
+
+def test_atualizar_quantidade_produto_fail_no_auth(flask_client):
+    global produto_id
+    response = flask_client.post('/produtos/atualizar_quantidade', json={
+        'produto_id': produto_id,
+        'quantidade': 2
+    })
+    assert response.status_code == 401
+
+def test_remover_produto_fail_no_auth(flask_client):
+    global produto_id
+    response = flask_client.post('/produtos/remover', json={
+        'produto_id': produto_id
+    })
+    assert response.status_code == 401
+
+def test_remover_todos_produtos_fail_no_auth(flask_client):
+    response = flask_client.post('/produtos/remover_todos')
+    assert response.status_code == 401

@@ -5,6 +5,7 @@ from functools import wraps
 from config import Config
 from app.models.artesao import Artesao
 from app.models.cliente import Cliente
+import re
 
 def gerar_token(usuario):
     payload = {
@@ -40,10 +41,16 @@ def artesao_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def email_valido(email):
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email)
+
 def cadastrar_artesao():
     data = request.json
     if not data or 'email' not in data or 'senha' not in data:
         return jsonify({'message': 'Dados incompletos'}), 400
+
+    if not email_valido(data['email']):
+        return jsonify({'message': 'Email inválido'}), 400
     
     artesao_id = Artesao.criar_artesao(
         nome=data.get('nome'),
@@ -62,6 +69,9 @@ def cadastrar_cliente():
     data = request.json
     if not data or 'email' not in data or 'senha' not in data:
         return jsonify({'message': 'Dados incompletos'}), 400
+
+    if not email_valido(data['email']):
+        return jsonify({'message': 'Email inválido'}), 400
     
     cliente_id = Cliente.criar_cliente(
         nome=data.get('nome'),

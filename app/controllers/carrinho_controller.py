@@ -73,10 +73,13 @@ def checkout():
 
     # 2. Atualiza o estoque de todos os produtos diretamente
     for produto_info in produtos_para_atualizar:
-        db.produtos.update_one(
-            {'_id': produto_info['produto_id']},
-            {'$set': {'quantidade': produto_info['nova_quantidade']}}
-        )
+        if produto_info['nova_quantidade'] > 0:
+            db.produtos.update_one(
+                {'_id': produto_info['produto_id']},
+                {'$set': {'quantidade': produto_info['nova_quantidade']}}
+            )
+        else:
+            db.produtos.delete_one({'_id':produto_info['produto_id']})
 
     # 3. Limpa o carrinho
     Carrinho.limpar_carrinho(cliente_id)

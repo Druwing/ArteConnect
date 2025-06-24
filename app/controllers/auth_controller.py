@@ -11,7 +11,7 @@ def gerar_token(usuario):
         'id': str(usuario['_id']),
         'email': usuario['email'],
         'tipo': usuario['tipo'],
-        'exp': datetime.now() + timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
+        'exp': int((datetime.now() + timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)).timestamp())
     }
     return jwt.encode(payload, Config.SECRET_KEY, algorithm='HS256')
 

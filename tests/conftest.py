@@ -21,3 +21,12 @@ def artesao_token(flask_client):
     })
     assert response.status_code == 200
     return response.json['token']
+
+@pytest.fixture(scope="module")
+def cliente_token(flask_client):
+    response = flask_client.post('/auth/login', json={
+        'email': "cliente@teste.com",
+        'senha': '1234'
+    })
+    assert response.status_code == 200
+    return response.json['token']

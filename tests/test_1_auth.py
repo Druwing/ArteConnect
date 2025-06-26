@@ -108,7 +108,6 @@ def test_cadastrar_artesao_missing_password(flask_client):
     assert response.status_code == 400
     assert 'Dados incompletos' in response.json['message']
 
-# TODO
 def test_cadastrar_artesao_empty_password(flask_client):
     response = flask_client.post('/auth/artesaos', json={
         'nome': 'Artesão Teste',
@@ -126,7 +125,19 @@ def test_cadastrar_artesao_missing_nome(flask_client):
         'bio': 'Bio de teste',
         'imagem_perfil': 'data:image/png;base64,AAAA'
     })
-    assert response.status_code == 409
+    assert response.status_code == 400
+    assert 'O nome não pode estar vazio' in response.json['message']
+    
+def test_cadastrar_artesao_empty_nome(flask_client):
+    response = flask_client.post('/auth/artesaos', json={
+        'email': "artesao_fail@teste.com",
+        'senha': '1234',
+        'nome': '',
+        'bio': 'Bio de teste',
+        'imagem_perfil': 'data:image/png;base64,AAAA'
+    })
+    assert response.status_code == 400
+    assert 'O nome não pode estar vazio' in response.json['message']
 
 def test_cadastrar_artesao_no_json(flask_client):
     response = flask_client.post('/auth/artesaos')
@@ -141,15 +152,15 @@ def test_cadastrar_cliente_missing_email(flask_client):
     })
     assert response.status_code == 400
     assert 'Dados incompletos' in response.json['message']
-
-def test_cadastrar_cliente_missing_password(flask_client):
+    
+def test_cadastrar_cliente_invalid_email(flask_client):
     response = flask_client.post('/auth/clientes', json={
         'nome': 'Cliente Teste',
-        'email': 'cliente_fail@teste.com'
+        'email': 'clientes_fail_teste.com',
+        'senha': '1234'
     })
     assert response.status_code == 400
-    assert 'Dados incompletos' in response.json['message']
-
+    
 def test_cadastrar_cliente_duplicate_email(flask_client):
     response = flask_client.post('/auth/clientes', json={
         'nome': 'Outro Cliente',
@@ -159,10 +170,14 @@ def test_cadastrar_cliente_duplicate_email(flask_client):
     assert response.status_code == 409
     assert 'Email já cadastrado' in response.json['message']
 
-def test_cadastrar_cliente_no_json(flask_client):
-    response = flask_client.post('/auth/clientes')
+def test_cadastrar_cliente_missing_password(flask_client):
+    response = flask_client.post('/auth/clientes', json={
+        'nome': 'Cliente Teste',
+        'email': 'cliente_fail@teste.com'
+    })
     assert response.status_code == 400
-
+    assert 'Dados incompletos' in response.json['message']
+    
 def test_cadastrar_cliente_empty_password(flask_client):
     response = flask_client.post('/auth/clientes', json={
         'nome': 'Cliente Teste',
@@ -170,14 +185,27 @@ def test_cadastrar_cliente_empty_password(flask_client):
         'senha': ''
     })
     assert response.status_code == 400
-
-def test_cadastrar_cliente_email_invalido(flask_client):
+    
+def test_cadastrar_cliente_missing_nome(flask_client):
     response = flask_client.post('/auth/clientes', json={
-        'nome': 'Cliente Teste',
-        'email': 'clientes_fail_teste.com',
-        'senha': '1234'
+        'email': 'cliente_fail@teste.com',
+        'senha': '123'
     })
-    assert response.status_code in (400, 422)
+    assert response.status_code == 400
+    assert 'O nome não pode estar vazio' in response.json['message']
+    
+def test_cadastrar_cliente_empty_nome(flask_client):
+    response = flask_client.post('/auth/clientes', json={
+        'email': 'cliente_fail@teste.com',
+        'senha': '123',
+        'nome': ''
+    })
+    assert response.status_code == 400
+    assert 'O nome não pode estar vazio' in response.json['message']
+
+def test_cadastrar_cliente_no_json(flask_client):
+    response = flask_client.post('/auth/clientes')
+    assert response.status_code == 400
 
 # -------- /auth/login --------
 
@@ -188,3 +216,29 @@ def test_login_invalid_credentials(flask_client):
     })
     assert response.status_code == 401
     assert 'token' not in response.json
+    
+def test_login_no_email(flask_client):
+    response = flask_client.post('/auth/login',json={
+        'senha':'senhaerrada'
+    })
+    assert response.status_code == 400
+    
+def test_login_empty_email(flask_client):
+    response = flask_client.post('/auth/login',json={
+        'email': '',
+        'senha':'senhaerrada'
+    })
+    assert response.status_code == 400
+    
+def test_login_no_password(flask_client):
+    response = flask_client.post('/auth/login',json={
+        'email': 'client@test.com'
+    })
+    assert response.status_code == 400
+    
+def test_login_empty_password(flask_client):
+    response = flask_client.post('/auth/login',json={
+        'email': 'client@test.com',
+        'senha':''
+    })
+    assert response.status_code == 400

@@ -52,6 +52,9 @@ def cadastrar_artesao():
     if not email_valido(data['email']):
         return jsonify({'message': 'Email inválido'}), 400
     
+    if data['senha'] == '':
+        return jsonify({'message':'Senha Inválida'}), 400
+    
     artesao_id = Artesao.criar_artesao(
         nome=data.get('nome'),
         email=data['email'],
@@ -72,6 +75,9 @@ def cadastrar_cliente():
 
     if not email_valido(data['email']):
         return jsonify({'message': 'Email inválido'}), 400
+    
+    if data['senha'] == '':
+        return jsonify({'message':'Senha Inválida'}), 400
     
     cliente_id = Cliente.criar_cliente(
         nome=data.get('nome'),

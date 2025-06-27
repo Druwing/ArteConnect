@@ -3,6 +3,7 @@ import pytest
 # =====================================
 # ======= TESTES BEM-SUCEDIDOS ========
 # =====================================
+
 def test_criar_produto_success(flask_client, artesao_token):
     response = flask_client.post('/produtos/', json={
         'nome': 'Produto Teste',

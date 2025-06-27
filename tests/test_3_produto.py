@@ -27,7 +27,7 @@ def test_atualizar_quantidade_produto_success(flask_client, artesao_token):
     global produto_id
     response = flask_client.post('/produtos/atualizar_quantidade', json={
         'produto_id': produto_id,
-        'quantidade': 3
+        'quantidade': 50
     }, headers={"Authorization": f"Bearer {artesao_token}"})
     assert response.status_code == 200
     assert 'Quantidade do produto atualizada com sucesso' in response.json['message']

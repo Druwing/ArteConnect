@@ -64,7 +64,7 @@ class Carrinho:
         )
 
     @staticmethod
-    def remover_produto(cliente_id, produto_id, quantidade=1):
+    def remover_produto(cliente_id, produto_id, quantidade=None):
         db = get_db()
         carrinho = db.carrinhos.find_one({'cliente_id': ObjectId(cliente_id)})
         if not carrinho or not carrinho.get('produtos'):
@@ -73,12 +73,25 @@ class Carrinho:
         produtos = carrinho['produtos']
         for prod in produtos:
             if str(prod['produto_id']) == str(produto_id):
+                
+                # If quantidade to remove is None, the product should be removed entirely
+                if quantidade is None:
+                    quantidade = prod['quantidade']
+                
+                # Verifies quantidade to remove is not negative
+                if quantidade < 0: 
+                    return {'error': 'Essa quantidade não é válida'}
+                
+                # Verifies if quantidade to remove is not greater than the actual quantidade of product
                 if quantidade > prod['quantidade']:
                     return {'error': 'Tentando remover quantidade maior do que a disponível no carrinho'}
-                elif quantidade == prod['quantidade']:
-                    produtos.remove(prod)
-                else:
-                    prod['quantidade'] -= quantidade
+                
+                # Removes produto entirely
+                if quantidade == prod['quantidade']: produtos.remove(prod)
+                    
+                # Decreases the quantidade of 
+                else: prod['quantidade'] -= quantidade
+                
                 db.carrinhos.update_one(
                     {'cliente_id': ObjectId(cliente_id)},
                     {'$set': {'produtos': produtos}}

@@ -1,45 +1,15 @@
 import uuid
 
 
-def test_remover_produto_success(flask_client):
-    # Cria e loga um artesão
-    email = f"artesao_remover_{uuid.uuid4().hex}@teste.com"
-    senha = "1234"
-    resp = flask_client.post('/auth/artesaos', json={
-        'nome': 'Artesão Remover',
-        'email': email,
-        'senha': senha,
-        'bio': 'Bio teste',
-        'imagem_perfil': ''
-    })
-    assert resp.status_code == 201
-
-    resp = flask_client.post('/auth/login', json={
-        'email': email,
-        'senha': senha
-    })
-    assert resp.status_code == 200
-    token = resp.json['token']
-
-    # Cria um produto
-    resp = flask_client.post('/produtos/', json={
-        'nome': 'Produto Remover',
-        'descricao': 'Produto para remover',
-        'preco': 10.0,
-        'quantidade': 1,
-        'categoria': 'Teste'
-    }, headers={"Authorization": f"Bearer {token}"})
-    assert resp.status_code == 201
-
+def test_remover_produto_success(flask_client, artesao_token):
     # Busca o produto criado
     produtos = flask_client.get('/produtos/').json
-    produto_id = [p['_id']
-                  for p in produtos if p['nome'] == 'Produto Remover'][0]
+    produto_id = produtos[0]['_id']
 
     # Remove o produto
     response = flask_client.post('/produtos/remover', json={
         'produto_id': produto_id
-    }, headers={"Authorization": f"Bearer {token}"})
+    }, headers={"Authorization": f"Bearer {artesao_token}"})
     assert response.status_code == 200
     assert 'Produto removido com sucesso' in response.json['message']
 

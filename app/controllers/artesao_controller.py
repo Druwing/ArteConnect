@@ -29,14 +29,21 @@ def obter_artesao(artesao_id):
     artesao['_id'] = str(artesao['_id'])
     imagem = artesao.get('imagem_perfil')
     if imagem:
-        if hasattr(imagem, 'tobytes'):
+        if isinstance(imagem, str):
+            # Already a string, just use it
+            artesao['imagem_perfil'] = imagem
+        elif hasattr(imagem, 'tobytes'):
             imagem_bytes = imagem.tobytes()
+            artesao['imagem_perfil'] = (
+                "data:image/png;base64," +
+                base64.b64encode(imagem_bytes).decode('utf-8')
+            )
         else:
             imagem_bytes = bytes(imagem)
-        artesao['imagem_perfil'] = (
-            "data:image/png;base64," +
-            base64.b64encode(imagem_bytes).decode('utf-8')
-        )
+            artesao['imagem_perfil'] = (
+                "data:image/png;base64," +
+                base64.b64encode(imagem_bytes).decode('utf-8')
+            )
     else:
         artesao['imagem_perfil'] = None
     if 'senha' in artesao:
@@ -48,19 +55,6 @@ def listar_artesaos():
     artesaos = Artesao.listar_artesaos()
     for artesao in artesaos:
         artesao['_id'] = str(artesao['_id'])
-        imagem = artesao.get('imagem_perfil')
-        if imagem:
-            # MongoDB Binary or bytes to base64 string
-            if hasattr(imagem, 'tobytes'):
-                imagem_bytes = imagem.tobytes()
-            else:
-                imagem_bytes = bytes(imagem)
-            artesao['imagem_perfil'] = (
-                "data:image/png;base64," +
-                base64.b64encode(imagem_bytes).decode('utf-8')
-            )
-        else:
-            artesao['imagem_perfil'] = None
         # Remove password and other sensitive fields if present
         if 'senha' in artesao:
             del artesao['senha']

@@ -8,6 +8,10 @@ ArtConnect is a RESTful Flask API for managing an artisan marketplace. It allows
 - **Product Management** (CRUD for artisans)
 - **Shopping Cart** (clients can add/remove products and checkout)
 - **JWT Authentication** for secure access
+- **Product Comments and Ratings** (clients can comment and rate products)
+- **Product Search and Filters**
+- **Permission and Security Controls**
+- **Integration and Edge Case Testing**
 
 ---
 
@@ -25,10 +29,12 @@ ArtConnect is a RESTful Flask API for managing an artisan marketplace. It allows
 
 ### Products (`/produtos`)
 - `POST /produtos/` — Create a new product (artisan only)
-- `GET /produtos/` — List all products
+- `GET /produtos/` — List all products (supports filters by name, category, price, etc.)
 - `POST /produtos/remover` — Remove a product by ID (artisan only)
 - `POST /produtos/remover_todos` — Remove all products for the authenticated artisan
 - `POST /produtos/atualizar_quantidade` — Update product quantity (artisan only)
+- `GET /produtos/<produto_id>/comentarios` — List comments for a product
+- `POST /produtos/<produto_id>/comentarios` — Add a comment/rating to a product (client only)
 
 ### Cart (`/carrinho`)
 - `GET /carrinho/` — View the current client's cart
@@ -54,4 +60,21 @@ Authorization: Bearer <token>
 
 ---
 
-For more details, see the code and controllers in the `app/`
+## Testing
+
+Automated tests cover:
+- Authentication and registration flows
+- Product CRUD and edge cases (limits, invalid data)
+- Cart operations and concurrency
+- Permissions and security
+- Comments and ratings
+- Integration and error scenarios
+
+To run all tests:
+```
+python run_tests.py
+```
+
+---
+
+For more details, see the code and controllers in the `app/` and the test cases in `tests/`.

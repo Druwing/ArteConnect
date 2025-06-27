@@ -1,8 +1,7 @@
-from flask import request, jsonify, current_app
+from flask import request, jsonify
 from app.models.carrinho import Carrinho
 from app.models.produto import Produto
 from app.controllers.auth_controller import login_required
-from app.controllers.produto_controller import atualizar_quantidade_produto
 from app.models.database import get_db
 from bson import ObjectId
 
@@ -22,7 +21,9 @@ def adicionar_ao_carrinho():
     cliente_id = request.usuario['id']
     data = request.json
     produtos = data.get('produtos')
-    if not produtos or not isinstance(produtos, list):
+    
+    bad_produtos:bool =(not produtos) or (not isinstance(produtos, list)) or (len(produtos) == 0)
+    if bad_produtos:
         return jsonify({'message': 'Lista de produtos não informada'}), 400
     Carrinho.adicionar_produtos(cliente_id, produtos)
     return jsonify({'message': 'Produtos adicionados ao carrinho'}), 200
@@ -32,7 +33,7 @@ def remover_do_carrinho():
     cliente_id = request.usuario['id']
     data = request.json
     produto_id = data.get('produto_id')
-    quantidade = data.get('quantidade', 1)
+    quantidade = data.get('quantidade', None)
     if not produto_id:
         return jsonify({'message': 'Produto não informado'}), 400
     resultado = Carrinho.remover_produto(cliente_id, produto_id, quantidade)
@@ -50,8 +51,7 @@ def limpar_carrinho():
 def checkout():
     cliente_id = request.usuario['id']
     carrinho = Carrinho.obter_carrinho(cliente_id)
-    produtos_no_carrinho = carrinho.get('produtos', [])
-
+    produtos_no_carrinho = carrinho['produtos']
     if not produtos_no_carrinho:
         return jsonify({'message': 'Carrinho vazio'}), 400
 
@@ -73,10 +73,13 @@ def checkout():
 
     # 2. Atualiza o estoque de todos os produtos diretamente
     for produto_info in produtos_para_atualizar:
-        db.produtos.update_one(
-            {'_id': produto_info['produto_id']},
-            {'$set': {'quantidade': produto_info['nova_quantidade']}}
-        )
+        if produto_info['nova_quantidade'] > 0:
+            db.produtos.update_one(
+                {'_id': produto_info['produto_id']},
+                {'$set': {'quantidade': produto_info['nova_quantidade']}}
+            )
+        else:
+            db.produtos.delete_one({'_id':produto_info['produto_id']})
 
     # 3. Limpa o carrinho
     Carrinho.limpar_carrinho(cliente_id)

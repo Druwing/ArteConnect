@@ -5,13 +5,14 @@ from functools import wraps
 from config import Config
 from app.models.artesao import Artesao
 from app.models.cliente import Cliente
+import re
 
 def gerar_token(usuario):
     payload = {
         'id': str(usuario['_id']),
         'email': usuario['email'],
         'tipo': usuario['tipo'],
-        'exp': datetime.now() + timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
+        'exp': int((datetime.now() + timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)).timestamp())
     }
     return jwt.encode(payload, Config.SECRET_KEY, algorithm='HS256')
 
@@ -40,10 +41,22 @@ def artesao_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def email_valido(email):
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email)
+
 def cadastrar_artesao():
     data = request.json
     if not data or 'email' not in data or 'senha' not in data:
         return jsonify({'message': 'Dados incompletos'}), 400
+
+    if not email_valido(data['email']):
+        return jsonify({'message': 'Email inválido'}), 400
+    
+    if data['senha'] == '':
+        return jsonify({'message':'Senha Inválida'}), 400
+    
+    if 'nome' not in data or data['nome'] == '':
+        return jsonify({'message':'O nome não pode estar vazio'}), 400
     
     artesao_id = Artesao.criar_artesao(
         nome=data.get('nome'),
@@ -62,6 +75,15 @@ def cadastrar_cliente():
     data = request.json
     if not data or 'email' not in data or 'senha' not in data:
         return jsonify({'message': 'Dados incompletos'}), 400
+
+    if not email_valido(data['email']):
+        return jsonify({'message': 'Email inválido'}), 400
+    
+    if data['senha'] == '':
+        return jsonify({'message':'Senha Inválida'}), 400
+    
+    if 'nome' not in data or data['nome'] == '':
+        return jsonify({'message':'O nome não pode estar vazio'}), 400
     
     cliente_id = Cliente.criar_cliente(
         nome=data.get('nome'),
@@ -76,7 +98,10 @@ def cadastrar_cliente():
 
 def login():
     data = request.json
-    if not data or 'email' not in data or 'senha' not in data:
+    
+    bad_email = ('email' not in data) or (data['email'] == '')
+    bad_password = ('senha' not in data) or (data['senha'] == '')
+    if not data or bad_email or bad_password:
         return jsonify({'message': 'Credenciais ausentes'}), 400
     
     usuario = Artesao.verificar_credenciais(data['email'], data['senha'])

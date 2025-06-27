@@ -13,7 +13,12 @@ def criar_produto():
     data = request.json
     artesao_id = request.usuario['id']
     
-    if not data or 'nome' not in data or 'preco' not in data:
+    empty: bool = not data
+    bad_name = ('nome' not in data) or (data['nome'] == '')
+    bad_preco = 'preco' not in data
+    bad_quantidade = 'quantidade' not in data
+    
+    if empty or bad_name or bad_preco or bad_quantidade:
         return jsonify({'message': 'Dados incompletos'}), 400
     
     produto_data = {

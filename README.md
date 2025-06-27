@@ -12,6 +12,41 @@ ArtConnect is a RESTful Flask API for managing an artisan marketplace. It allows
 - **Product Search and Filters**
 - **Permission and Security Controls**
 - **Integration and Edge Case Testing**
+- **API and Database Health Check**
+- **Ready for Serverless Deploy (Vercel)**
+
+---
+
+## Installation
+
+1. **Clone the repository:**
+   ```
+   git clone https://github.com/Druwing/ArteConnect.git
+   cd ArteConnect
+   ```
+
+2. **Create and activate a virtual environment (recommended):**
+   ```
+   python -m venv venv
+   venv\Scripts\activate
+   ```
+
+3. **Install dependencies:**
+   ```
+   pip install -r requirements.txt
+   ```
+
+4. **Set environment variables:**
+   - Create a `.env` file in the project root with your configuration (see `.env.example` if available).
+
+5. **Start MongoDB:**
+   - If you don't have MongoDB installed, you can use a service like MongoDB Atlas or install it locally. 
+   - Make sure you have a MongoDB instance running locally or update the connection string in your environment variables.
+
+6. **Run the application:**
+   ```
+   python app.py
+   ```
 
 ---
 
@@ -23,7 +58,6 @@ ArtConnect is a RESTful Flask API for managing an artisan marketplace. It allows
 - `POST /auth/login` — Login (artisan or client)
 
 ### Artisans (`/artesaos`)
-- `POST /artesaos/` — Register a new artisan
 - `GET /artesaos/` — List all artisans
 - `GET /artesaos/<artesao_id>` — Get artisan by ID
 
@@ -77,4 +111,10 @@ python run_tests.py
 
 ---
 
-For more details, see the code and controllers in the `app/` and the test cases in `tests/`.
+## Serverless Deploy
+
+The project is ready for serverless deployment (e.g., Vercel) using the `vercel_app.py` file and `vercel.json` configuration.
+
+---
+
+For more details, see the code and controllers in the `app/` directory and the test cases in `tests/`.

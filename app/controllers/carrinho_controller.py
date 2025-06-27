@@ -51,8 +51,7 @@ def limpar_carrinho():
 def checkout():
     cliente_id = request.usuario['id']
     carrinho = Carrinho.obter_carrinho(cliente_id)
-    produtos_no_carrinho = carrinho.get('produtos', [])
-
+    produtos_no_carrinho = carrinho['produtos']
     if not produtos_no_carrinho:
         return jsonify({'message': 'Carrinho vazio'}), 400
 

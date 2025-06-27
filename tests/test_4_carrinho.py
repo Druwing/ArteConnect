@@ -35,12 +35,24 @@ def test_remover_do_carrinho_success(flask_client, cliente_token):
     response = flask_client.post('/carrinho/remover', json=payload, headers={"Authorization": f"Bearer {cliente_token}"})
     assert response.status_code == 200
 
+def test_limpar_carrinho_success(flask_client, cliente_token):    
+    # Then, it removes all items from carrinho
+    response = flask_client.post('/carrinho/limpar', headers={"Authorization": f"Bearer {cliente_token}"})
+    assert response.status_code == 200
+    
+    # Adds productos back in carrinho so other tests can be performed
+    test_adicionar_ao_carrinho_success(flask_client,cliente_token)
+    
 def test_checkout_success(flask_client, cliente_token):
-    # Ensures carrinho contains items
+    # Ensure carrinho contains no incorrect items 
+    flask_client.post('/carrinho/limpar', headers={"Authorization": f"Bearer {cliente_token}"})
+    
+    # Ensures carrinho contains correct items
     produtos_artesao = flask_client.get('/produtos/').json
+    produto = produtos_artesao[0]
     payload = {
         "produtos": [
-            {"produto_id": produto['_id'], "quantidade": 5} for produto in produtos_artesao
+            {'produto_id': produto['_id'], 'quantidade':1}
         ]
     }
     flask_client.post('/carrinho/adicionar', json=payload, headers={"Authorization": f"Bearer {cliente_token}"})
@@ -51,16 +63,6 @@ def test_checkout_success(flask_client, cliente_token):
     
     # Adds productos back in carrinho so other tests can be performed
     test_adicionar_ao_carrinho_success(flask_client,cliente_token)
-
-def test_limpar_carrinho_success(flask_client, cliente_token):    
-    # Then, it removes all items from carrinho
-    response = flask_client.post('/carrinho/limpar', headers={"Authorization": f"Bearer {cliente_token}"})
-    assert response.status_code == 200
-    
-    # Adds productos back in carrinho so other tests can be performed
-    test_adicionar_ao_carrinho_success(flask_client,cliente_token)
-    
-    
 # =====================================
 # =========== TESTES FALHOS ===========
 # =====================================

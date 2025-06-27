@@ -94,3 +94,49 @@ def test_remover_todos_produtos_fail_client_auth(flask_client, cliente_token):
     response = flask_client.post('/produtos/remover_todos',
                                  headers={"Authorization": f"Bearer {cliente_token}"})
     assert response.status_code == 403
+    
+# -------- incomplete data --------
+
+# Nome
+def test_criar_produto_no_nome(flask_client, artesao_token):
+    response = flask_client.post('/produtos/', json={
+        'descricao': 'Descrição do produto',
+        'preco': 100.50,
+        'quantidade': 5,
+        'imagem_url': 'http://exemplo.com/imagem.png'
+    }, headers={"Authorization": f"Bearer {artesao_token}"})
+    assert response.status_code == 400
+    assert 'Dados incompletos' in response.json['message']
+    
+def test_criar_produto_empty_nome(flask_client, artesao_token):
+    response = flask_client.post('/produtos/', json={
+        'nome': '',
+        'descricao': 'Descrição do produto',
+        'preco': 100.50,
+        'quantidade': 5,
+        'imagem_url': 'http://exemplo.com/imagem.png'
+    }, headers={"Authorization": f"Bearer {artesao_token}"})
+    assert response.status_code == 400
+    assert 'Dados incompletos' in response.json['message']
+   
+# Preco 
+def test_criar_produto_no_preco(flask_client, artesao_token):
+    response = flask_client.post('/produtos/', json={
+        'nome': 'Produto gratis',
+        'descricao': 'Descrição do produto',
+        'quantidade': 5,
+        'imagem_url': 'http://exemplo.com/imagem.png'
+    }, headers={"Authorization": f"Bearer {artesao_token}"})
+    assert response.status_code == 400
+    assert 'Dados incompletos' in response.json['message']
+    
+# Quantidade
+def test_criar_produto_no_quantidade(flask_client, artesao_token):
+    response = flask_client.post('/produtos/', json={
+        'nome': 'Produto gratis',
+        'descricao': 'Descrição do produto',
+        'preco': 100.50,
+        'imagem_url': 'http://exemplo.com/imagem.png'
+    }, headers={"Authorization": f"Bearer {artesao_token}"})
+    assert response.status_code == 400
+    assert 'Dados incompletos' in response.json['message']

@@ -22,3 +22,9 @@ def test_obter_artesao_route(flask_client, artesao_token):
     assert data['nome'] == nome_artesao
     assert data['email'] == email_artesao
     assert 'imagem_perfil' in data
+    
+def test_artesao_listagem_nao_expoe_senha(flask_client, cliente_token):
+    resp = flask_client.get('/artesaos/', headers={"Authorization": f"Bearer {cliente_token}"})
+    assert resp.status_code == 200
+    for artesao in resp.json:
+        assert 'senha' not in artesao
